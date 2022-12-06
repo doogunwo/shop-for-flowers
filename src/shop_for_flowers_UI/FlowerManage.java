@@ -32,7 +32,7 @@ import java.sql.SQLException;
 import javax.swing.DefaultComboBoxModel;
 import java.awt.SystemColor;
 
-public class OrderManage extends JFrame {
+public class FlowerManage extends JFrame {
 	
 	String user_phone = "";
 	Boolean manager = false;
@@ -40,19 +40,19 @@ public class OrderManage extends JFrame {
 	private JTextField searchTextField;
 	private JTable table;
 	private Main mainFrame;
-	
-	OrderSearch orderSearchFrame;
+
 	OrderManage orderManageFrame;
 	UserManage userManageFrame;
 	ItemManage itemManageFrame;
 	FlowerManage flowerManageFrame;
+	FlowerSearch flowerSearchFrame;
+	AddFlower addFlowerFrame;
 
-
-	public OrderManage(String user_phone, Boolean manager) {
+	public FlowerManage(String user_phone, Boolean manager) {
 		this.user_phone = user_phone;
 		this.manager = manager;
 
-		setTitle("\uB3C4\uC11C \uAD00\uB9AC \uD504\uB85C\uADF8\uB7A8 - \uBA54\uC778");
+		setTitle("꽃관리 프로그램 - 상품관리");
 		setBounds(100, 100, 881, 694);
 		contentPane = new JPanel(); // 메인 프레임
 		contentPane.setBackground(SystemColor.menu);
@@ -154,25 +154,37 @@ public class OrderManage extends JFrame {
 				salesStatistics.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
 				salesStatistics.setBackground(new Color(230, 230, 250));
 				menuBar.add(salesStatistics);
-				
-				
-				
-				
 		
-		JButton btnNewButton = new JButton("주문 검색");
+		JButton btnNewButton = new JButton("꽃 검색");
 		btnNewButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				orderSearchFrame = new OrderSearch(user_phone, manager);
-				orderSearchFrame.setLocationRelativeTo(null); // 중앙에 출력
-				orderSearchFrame.setVisible(true);
+				flowerSearchFrame = new FlowerSearch(user_phone, manager);
+				flowerSearchFrame.setLocationRelativeTo(null); // 중앙에 출력
+				flowerSearchFrame.setVisible(true);
 				setVisible(false);
 			}
 		});
 		btnNewButton.setBounds(272, 151, 319, 73);
 		contentPane.add(btnNewButton);
 		
-		JButton btnNewButton_1 = new JButton("주문 추가");
+		JButton btnNewButton_1 = new JButton("꽃 추가");
+		btnNewButton_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				addFlowerFrame = new AddFlower(user_phone, manager);
+				addFlowerFrame.setLocationRelativeTo(null); // 중앙에 출력
+				addFlowerFrame.setResizable(false); // 창 크기 고정
+				addFlowerFrame.setVisible(true);
+				// 도서추가 창에서 창을 닫으면 호출되는 메소드
+				addFlowerFrame.addWindowListener(new WindowAdapter() {
+					@Override
+					public void windowClosing(WindowEvent e) {
+						e.getWindow().dispose();
+					}
+				});
+			}
+		});
 		btnNewButton_1.setBounds(272, 306, 319, 73);
 		contentPane.add(btnNewButton_1);
 		

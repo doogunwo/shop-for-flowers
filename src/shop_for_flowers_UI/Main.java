@@ -43,19 +43,33 @@ public class Main extends JFrame {
 	int t = 0;
 	
 	OrderManage orderManageFrame;
+	UserManage userManageFrame;
+	ItemManage itemManageFrame;
+	FlowerManage flowerManageFrame;
 
 
 	/**
 	 * Launch the application.
 	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					Main frame = new Main();
+					frame.setLocationRelativeTo(null); // 중앙에 출력
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
 
 	/**
 	 * Create the frame.
 	 */
-	public Main(String user_phone, Boolean manager) {
+	public Main() {
 
-		this.user_phone = user_phone; // 로그인한 유저의 PK
-		this.manager = manager;
 		setTitle("꽃관리  프로그램 - 메인");
 		setBounds(100, 100, 881, 694);
 		contentPane = new JPanel(); // 메인 프레임
@@ -81,14 +95,14 @@ public class Main extends JFrame {
 			}
 		});
 		homeIconMenu.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		homeIconMenu.setForeground(new Color(0, 0, 0));
+		homeIconMenu.setForeground(Color.WHITE);
 		ImageIcon icon5 = new ImageIcon("D:\\\uC0C8 \uD3F4\uB354\\pngegg.png");
 		Image img5 = icon5.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
 		ImageIcon changeIcon5 = new ImageIcon(img5);
 		homeIconMenu.setIcon(changeIcon5);
 		menuBar.add(homeIconMenu);
 
-		// 도서 찾기 메뉴
+		// 주문 관리 메뉴
 		JMenu orderManage = new JMenu("주문관리"); // 메뉴 - 도서찾기
 		orderManage.setBackground(Color.DARK_GRAY);
 		orderManage.addMouseListener(new MouseAdapter() {
@@ -97,50 +111,67 @@ public class Main extends JFrame {
 				orderManageFrame = new OrderManage(user_phone, manager);
 				orderManageFrame.setVisible(true);
 				setVisible(false);
-
 			}
 		});
 
-		orderManage.setForeground(Color.BLACK);
+		orderManage.setForeground(Color.WHITE);
 		orderManage.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
 		menuBar.add(orderManage);
 
-		// 회원 정보 메뉴
-		JMenu userInfoMenu = new JMenu("고객관리");
-		userInfoMenu.addMouseListener(new MouseAdapter() {
+		// 고객 관리 메뉴
+		JMenu userManage = new JMenu("고객관리");
+		userManage.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				//userInfoFrame = new UserInfo(user_phone, manager);
-				//userInfoFrame.setLocationRelativeTo(null); // 중앙에 출력
-				//userInfoFrame.setVisible(true);
+				userManageFrame = new UserManage(user_phone, manager);
+				userManageFrame.setLocationRelativeTo(null); // 중앙에 출력
+				userManageFrame.setVisible(true);
 				setVisible(false);
 			}
 		});
-		userInfoMenu.setForeground(Color.BLACK);
-		userInfoMenu.setBackground(new Color(230, 230, 250));
-		userInfoMenu.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		menuBar.add(userInfoMenu);
+		userManage.setForeground(Color.WHITE);
+		userManage.setBackground(new Color(230, 230, 250));
+		userManage.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+		menuBar.add(userManage);
 		
 		// 상품 관리 메뉴
-		JMenu userInfoMenu_1 = new JMenu("상품관리");
-		userInfoMenu_1.setForeground(Color.BLACK);
-		userInfoMenu_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		userInfoMenu_1.setBackground(new Color(230, 230, 250));
-		menuBar.add(userInfoMenu_1);
+		JMenu itemManage = new JMenu("상품관리");
+		itemManage.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				itemManageFrame = new ItemManage(user_phone, manager);
+				itemManageFrame.setLocationRelativeTo(null); // 중앙에 출력
+				itemManageFrame.setVisible(true);
+				setVisible(false);
+			}
+		});
+		itemManage.setForeground(Color.WHITE);
+		itemManage.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+		itemManage.setBackground(new Color(230, 230, 250));
+		menuBar.add(itemManage);
 		
 		// 꽃 관리 메뉴
-		JMenu userInfoMenu_1_1 = new JMenu("꽃관리");
-		userInfoMenu_1_1.setForeground(Color.BLACK);
-		userInfoMenu_1_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		userInfoMenu_1_1.setBackground(new Color(230, 230, 250));
-		menuBar.add(userInfoMenu_1_1);
+		JMenu flowerManage = new JMenu("꽃관리");
+		flowerManage.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				flowerManageFrame = new FlowerManage(user_phone, manager);
+				flowerManageFrame.setLocationRelativeTo(null); // 중앙에 출력
+				flowerManageFrame.setVisible(true);
+				setVisible(false);
+			}
+		});
+		flowerManage.setForeground(Color.WHITE);
+		flowerManage.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+		flowerManage.setBackground(new Color(230, 230, 250));
+		menuBar.add(flowerManage);
 		
 		// 매출 통계 메뉴
-		JMenu userInfoMenu_1_1_1 = new JMenu("매출통계");
-		userInfoMenu_1_1_1.setForeground(Color.BLACK);
-		userInfoMenu_1_1_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		userInfoMenu_1_1_1.setBackground(new Color(230, 230, 250));
-		menuBar.add(userInfoMenu_1_1_1);
+		JMenu salesStatistics = new JMenu("매출통계");
+		salesStatistics.setForeground(Color.WHITE);
+		salesStatistics.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+		salesStatistics.setBackground(new Color(230, 230, 250));
+		menuBar.add(salesStatistics);
 		
 		
 		
@@ -285,8 +316,6 @@ public class Main extends JFrame {
 		favorite_img6.setBounds(703, 10, 105, 105);
 		favoriteBookPanel.add(favorite_img6);
 		favorite_BookLabel_array[5] = favorite_img6;
-
-		
 
 	}
 }

@@ -28,6 +28,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.swing.DefaultComboBoxModel;
 import java.awt.SystemColor;
@@ -40,6 +41,13 @@ public class UserManage extends JFrame {
 	private JTextField searchTextField;
 	private JTable table;
 	private Main mainFrame;
+	
+	OrderManage orderManageFrame;
+	UserManage userManageFrame;
+	ItemManage itemManageFrame;
+	FlowerManage flowerManageFrame;
+	
+	DB_Connector dbConn = new DB_Connector();
 
 
 	public UserManage(String user_phone, Boolean manager) {
@@ -56,81 +64,98 @@ public class UserManage extends JFrame {
 		setLocationRelativeTo(null); // 중앙에 출력
 
 		// 메뉴바
-		JMenuBar menuBar = new JMenuBar();
-		menuBar.setBorderPainted(false);
-		menuBar.setBackground(new Color(51, 51, 51));
-		menuBar.setBounds(0, 0, 865, 47);
-		contentPane.add(menuBar);
+				JMenuBar menuBar = new JMenuBar();
+				menuBar.setBorderPainted(false);
+				menuBar.setBackground(new Color(51, 51, 51));
+				menuBar.setBounds(0, 0, 865, 47);
+				contentPane.add(menuBar);
 
-		// 홈아이콘 메뉴
-		JMenu homeIconMenu = new JMenu(" \uD648 ");
-		homeIconMenu.setBackground(Color.DARK_GRAY);
-		homeIconMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+				// 홈아이콘 메뉴
+				JMenu homeIconMenu = new JMenu(" \uD648 ");
+				homeIconMenu.setBackground(Color.DARK_GRAY);
+				homeIconMenu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
 
-			}
-		});
-		homeIconMenu.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		homeIconMenu.setForeground(new Color(0, 0, 0));
-		ImageIcon icon5 = new ImageIcon("D:\\\uC0C8 \uD3F4\uB354\\pngegg.png");
-		Image img5 = icon5.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-		ImageIcon changeIcon5 = new ImageIcon(img5);
-		homeIconMenu.setIcon(changeIcon5);
-		menuBar.add(homeIconMenu);
+					}
+				});
+				homeIconMenu.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+				homeIconMenu.setForeground(Color.WHITE);
+				ImageIcon icon5 = new ImageIcon("D:\\\uC0C8 \uD3F4\uB354\\pngegg.png");
+				Image img5 = icon5.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+				ImageIcon changeIcon5 = new ImageIcon(img5);
+				homeIconMenu.setIcon(changeIcon5);
+				menuBar.add(homeIconMenu);
 
-		// 도서 찾기 메뉴
-		JMenu findBookMenu = new JMenu("주문관리"); // 메뉴 - 도서찾기
-		findBookMenu.setBackground(Color.DARK_GRAY);
-		findBookMenu.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				//searchBookFrame = new SearchBook(user_phone, manager);
-				//searchBookFrame.setVisible(true);
-				setVisible(false);
+				// 주문 관리 메뉴
+				JMenu orderManage = new JMenu("주문관리"); // 메뉴 - 도서찾기
+				orderManage.setBackground(Color.DARK_GRAY);
+				orderManage.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						orderManageFrame = new OrderManage(user_phone, manager);
+						orderManageFrame.setVisible(true);
+						setVisible(false);
+					}
+				});
 
-			}
-		});
+				orderManage.setForeground(Color.WHITE);
+				orderManage.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+				menuBar.add(orderManage);
 
-		findBookMenu.setForeground(Color.BLACK);
-		findBookMenu.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		menuBar.add(findBookMenu);
-
-		// 회원 정보 메뉴
-		JMenu userInfoMenu = new JMenu("고객관리");
-		userInfoMenu.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				//userInfoFrame = new UserInfo(user_phone, manager);
-				//userInfoFrame.setLocationRelativeTo(null); // 중앙에 출력
-				//userInfoFrame.setVisible(true);
-				setVisible(false);
-			}
-		});
-		userInfoMenu.setForeground(Color.BLACK);
-		userInfoMenu.setBackground(new Color(230, 230, 250));
-		userInfoMenu.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		menuBar.add(userInfoMenu);
-		
-		// 상품 관리 메뉴
-		JMenu userInfoMenu_1 = new JMenu("상품관리");
-		userInfoMenu_1.setForeground(Color.BLACK);
-		userInfoMenu_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		userInfoMenu_1.setBackground(new Color(230, 230, 250));
-		menuBar.add(userInfoMenu_1);
-		
-		// 꽃 관리 메뉴
-		JMenu userInfoMenu_1_1 = new JMenu("꽃관리");
-		userInfoMenu_1_1.setForeground(Color.BLACK);
-		userInfoMenu_1_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		userInfoMenu_1_1.setBackground(new Color(230, 230, 250));
-		menuBar.add(userInfoMenu_1_1);
-		
-		// 매출 통계 메뉴
-		JMenu userInfoMenu_1_1_1 = new JMenu("매출통계");
-		userInfoMenu_1_1_1.setForeground(Color.BLACK);
-		userInfoMenu_1_1_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		userInfoMenu_1_1_1.setBackground(new Color(230, 230, 250));
-		menuBar.add(userInfoMenu_1_1_1);
+				// 고객 관리 메뉴
+				JMenu userManage = new JMenu("고객관리");
+				userManage.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						userManageFrame = new UserManage(user_phone, manager);
+						userManageFrame.setLocationRelativeTo(null); // 중앙에 출력
+						userManageFrame.setVisible(true);
+						setVisible(false);
+					}
+				});
+				userManage.setForeground(Color.WHITE);
+				userManage.setBackground(new Color(230, 230, 250));
+				userManage.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+				menuBar.add(userManage);
+				
+				// 상품 관리 메뉴
+				JMenu itemManage = new JMenu("상품관리");
+				itemManage.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						itemManageFrame = new ItemManage(user_phone, manager);
+						itemManageFrame.setLocationRelativeTo(null); // 중앙에 출력
+						itemManageFrame.setVisible(true);
+						setVisible(false);
+					}
+				});
+				itemManage.setForeground(Color.WHITE);
+				itemManage.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+				itemManage.setBackground(new Color(230, 230, 250));
+				menuBar.add(itemManage);
+				
+				// 꽃 관리 메뉴
+				JMenu flowerManage = new JMenu("꽃관리");
+				flowerManage.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						flowerManageFrame = new FlowerManage(user_phone, manager);
+						flowerManageFrame.setLocationRelativeTo(null); // 중앙에 출력
+						flowerManageFrame.setVisible(true);
+						setVisible(false);
+					}
+				});
+				flowerManage.setForeground(Color.WHITE);
+				flowerManage.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+				flowerManage.setBackground(new Color(230, 230, 250));
+				menuBar.add(flowerManage);
+				
+				// 매출 통계 메뉴
+				JMenu salesStatistics = new JMenu("매출통계");
+				salesStatistics.setForeground(Color.WHITE);
+				salesStatistics.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+				salesStatistics.setBackground(new Color(230, 230, 250));
+				menuBar.add(salesStatistics);
 		
 		
 		
@@ -266,20 +291,21 @@ public class UserManage extends JFrame {
 		DefaultTableModel model = new DefaultTableModel(null, columns);
 		table.setModel(model); // 테이블 세팅
 
-//		try { // DB 접근
-//			ResultSet rs = dbConn.executeQuery(
-//					"SELECT USER_NAME, USER_MAIL, USER_PHONE, USER_BIRTH, USER_SUSPENSION, USER_OUT_DATE FROM USER WHERE USER_MANAGER =false;");
-//			set_table(rs); // 관리자를 제외한 회원들의 정보로 테이블을 구성
-//		} catch (SQLException e) {
-//			System.out.println("회원검색창 초기 테이블 구성중 SQL 실행 에러");
-//		}
+		try { // DB 접근
+			String query = "SELECT 전화번호, 이름, 고객등급 FROM 주문고객";
+			dbConn.DB_Connect();
+			Statement stmt = dbConn.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+		            ResultSet.CONCUR_UPDATABLE);
+			ResultSet rs = stmt.executeQuery(query);
+
+			set_table(rs); // 관리자를 제외한 회원들의 정보로 테이블을 구성
+		} catch (SQLException e) {
+			System.out.println("회원검색창 초기 테이블 구성중 SQL 실행 에러");
+		}
 		// 간격 조절
 		table.getColumnModel().getColumn(0).setPreferredWidth(110);
 		table.getColumnModel().getColumn(1).setPreferredWidth(101);
 		table.getColumnModel().getColumn(2).setPreferredWidth(106);
-		table.getColumnModel().getColumn(3).setPreferredWidth(115);
-		table.getColumnModel().getColumn(4).setResizable(false);
-		table.getColumnModel().getColumn(4).setPreferredWidth(115);
 	}
 
 	// ResultSet을 받아 테이블 재구성하는 함수
@@ -287,35 +313,35 @@ public class UserManage extends JFrame {
 		try {
 
 			int row = 0;
+
 			if (rs.last()) { // 커서를 마지막으로 이동
 				row = rs.getRow(); // row에 현재 row의 인덱스를 저장(총 row의 개수를 저장)
 				rs.beforeFirst(); // 다시 앞으로 이동시킴
 			}
 
-			String[][] data = new String[row][6]; // 테이블에 넣을 데이터를 저장할 배열
+			String[][] data = new String[row][3]; // 테이블에 넣을 데이터를 저장할 배열
 			int i = 0;
 			// 일은 데이터로 테이블 구성
 			while (rs.next()) {
-				data[i][0] = rs.getString("USER_NAME"); // 회원 이름
-				data[i][1] = rs.getString("USER_MAIL"); // 회원 메일
-				data[i][2] = rs.getString("USER_PHONE"); // 회원 전화번호
-				data[i][3] = rs.getString("USER_BIRTH"); // 회원 생일
-				// 회원 정지여부
-				if (rs.getString("USER_SUSPENSION") == null) {
-					data[i][4] = "N";
-				} else {
-					data[i][4] = rs.getString("USER_SUSPENSION").substring(0, 16);
-				}
-
-				// 회원 탈퇴여부
-				if (rs.getString("USER_OUT_DATE") == null) {
-					data[i][5] = "N";
-				} else {
-					data[i][5] = rs.getString("USER_OUT_DATE").substring(0, 10);
-				}
+				data[i][0] = rs.getString("전화번호"); // 회원 이름
+				data[i][1] = rs.getString("이름"); // 회원 메일
+				data[i][2] = rs.getString("고객등급"); // 회원 전화번호
+//				// 회원 정지여부
+//				if (rs.getString("USER_SUSPENSION") == null) {
+//					data[i][4] = "N";
+//				} else {
+//					data[i][4] = rs.getString("USER_SUSPENSION").substring(0, 16);
+//				}
+//
+//				// 회원 탈퇴여부
+//				if (rs.getString("USER_OUT_DATE") == null) {
+//					data[i][5] = "N";
+//				} else {
+//					data[i][5] = rs.getString("USER_OUT_DATE").substring(0, 10);
+//				}
 				i++;
 			}
-			String[] columns = { "이름", "이메일", "전화번호", "생년월일", "정지여부", "탈퇴여부" }; // 테이블의 구성
+			String[] columns = { "전화번호", "이름", "고객등급"}; // 테이블의 구성
 			table.setModel(new DefaultTableModel(data, columns)); // 테이들 다시 세팅
 		} catch (SQLException e) {
 			System.out.println("회원검색창에서 테이블 구성중 SQL 실행 에러");

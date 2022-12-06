@@ -32,10 +32,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.Statement;
 
 import javax.swing.JTextArea;
 import javax.imageio.ImageIO;
@@ -49,13 +51,13 @@ import java.awt.Window.Type;
 import javax.swing.UIManager;
 import javax.swing.JTextField;
 
-public class AddFlower extends JFrame {
+public class EditFlower extends JFrame {
 	DB_Connector dbConn = new DB_Connector();
 	
-	public String user_phone="";	//유저 PK 정보를 저장할 변수
+	public String 이름="";	//유저 PK 정보를 저장할 변수
 	public Boolean manager = false;	//유저가 관리자인지 확인할 변수
 	int ret = 1;	//파일 선택 여부를 알려주는 변수
-	JButton bookAddButton;
+	JButton flowerEditButton;
 	private JPanel contentPane;
 	private JTextField flowerNameTextField;
 	private JTextField flowerKindTextField;
@@ -65,6 +67,7 @@ public class AddFlower extends JFrame {
 	private JTextField flowerLinkTextField;
 	private JTextField flowerDescriptionTextField;
 	private JTextField flowerBloomTextField;
+	FlowerInfo flowerInfo;
 
 	/**
 	 * Launch the application.
@@ -73,11 +76,11 @@ public class AddFlower extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public AddFlower(String user_phone, Boolean manager) {
-		this.user_phone = user_phone;
-		this.manager = manager;
+	public EditFlower(String 이름, FlowerInfo flowerInfo) {
+		this.이름 = 이름;
+		this.flowerInfo = flowerInfo;
 		
-		setTitle("꽃관리 프로그램 - 꽃추가");
+		setTitle("꽃관리 프로그램 - 꽃수정");
 		setBounds(100, 100, 848, 622);
 		contentPane = new JPanel();
 		contentPane.setBackground(SystemColor.menu);
@@ -124,10 +127,10 @@ public class AddFlower extends JFrame {
 
 				  public void changed() {
 				     if (flowerHorseTextField.getText().equals("")){
-				    	 bookAddButton.setEnabled(false);
+				    	 flowerEditButton.setEnabled(false);
 				     }
 				     else {
-				    	 bookAddButton.setEnabled(true);
+				    	 flowerEditButton.setEnabled(true);
 				    }
 
 				  }
@@ -159,10 +162,10 @@ public class AddFlower extends JFrame {
 
 				  public void changed() {
 				     if (flowerHorseTextField.getText().equals("")){
-				    	 bookAddButton.setEnabled(false);
+				    	 flowerEditButton.setEnabled(false);
 				     }
 				     else {
-				    	 bookAddButton.setEnabled(true);
+				    	 flowerEditButton.setEnabled(true);
 				    }
 
 				  }
@@ -193,10 +196,10 @@ public class AddFlower extends JFrame {
 
 				  public void changed() {
 				     if (flowerHorseTextField.getText().equals("")){
-				    	 bookAddButton.setEnabled(false);
+				    	 flowerEditButton.setEnabled(false);
 				     }
 				     else {
-				    	 bookAddButton.setEnabled(true);
+				    	 flowerEditButton.setEnabled(true);
 				    }
 
 				  }
@@ -284,28 +287,21 @@ public class AddFlower extends JFrame {
 		scrollPane.setViewportView(flowerDescriptionTextField);
 		flowerDescriptionTextField.setColumns(10);
 
-		// 책 추가 버튼
-		bookAddButton = new JButton("꽃 추가");
-		bookAddButton.setEnabled(false);
-		bookAddButton.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 15));
-		bookAddButton.setBounds(348, 511, 132, 48);
-		//책 추가 버튼을 누르면 호출되는 메소드 연결
-		bookAddButton.addActionListener(new ActionListener() {
+		// 꽃 수정 버튼
+		flowerEditButton = new JButton("꽃 수정하기");
+		flowerEditButton.setEnabled(false);
+		flowerEditButton.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 15));
+		flowerEditButton.setBounds(348, 511, 132, 48);
+		
+		// 꽃 수정하는 버튼
+		flowerEditButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				boolean isSuccess = false;
 
-					String query = "insert into 꽃(\r\n"
-							+ "이름,\r\n"
-							+ "종류,\r\n"
-							+ "원산지,\r\n"
-							+ "파종기,\r\n"
-							+ "개화기,\r\n"
-							+ "꽃말,\r\n"
-							+ "설명,\r\n"
-							+ "이미지주소\r\n"
-							+ ")values(\r\n"
-							+ "?, ?, ?, ?, ?, ?, ?, ?)";
+				String query = "UPDATE 꽃\r\n"
+						+ "SET 이름 = ?, 종류 = ?, 원산지 = ?, 파종기 = ?, 개화기 = ?, 꽃말 = ?, 설명 = ?, 이미지주소 = ?\r\n"
+						+ "WHERE 이름 = ?";
 					
 				try { // DB 접근
 					dbConn.DB_Connect();
@@ -319,16 +315,16 @@ public class AddFlower extends JFrame {
 					ps.setString(6, flowerHorseTextField.getText());
 					ps.setString(7, flowerDescriptionTextField.getText());	
 					ps.setString(8, flowerLinkTextField.getText());			//책 관련링크
-					
+					ps.setString(9, 이름);			//책 관련링크
 					
 					
 					int count = ps.executeUpdate();
-					if(count==0) {	
-						JOptionPane.showMessageDialog(null,"꽃 등록에 실패했습니다.", "꽃등록 실패", JOptionPane.ERROR_MESSAGE);
-					}
-					else {		
-						JOptionPane.showMessageDialog(null,"꽃 등록에 성공하였습니다.", "꽃등록 성공", JOptionPane.NO_OPTION);
-						isSuccess = true;
+					if (count == 0) {
+						JOptionPane.showMessageDialog(null, "꽃 수정에 실패하였습니다.", "꽃 수정 실패",
+								JOptionPane.ERROR_MESSAGE);
+					} else {
+						JOptionPane.showMessageDialog(null, "꽃 수정에 성공하였습니다.", "꽃 수정 성공",
+								JOptionPane.NO_OPTION);
 					}
 				}
 				catch (NumberFormatException e1) {
@@ -343,12 +339,43 @@ public class AddFlower extends JFrame {
 					e1.printStackTrace();	//에러 추적
 					System.out.println("도서추가 화면에서 SQL 실행 에러");
 				}
-				if(isSuccess)
-					dispose();	//추가 후 창 닫기
+				try {
+					flowerInfo.getFlowerInfo();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+				dispose();
 			}
 		});
-		contentPane.add(bookAddButton);	//책 추가 버튼 부착
-		
+		contentPane.add(flowerEditButton);	//책 추가 버튼 부착
+		getFlowerInfo();
 	
+	}
+	
+	public void getFlowerInfo() {
+		try {
+			String query = "SELECT 이름, 종류, 원산지, 파종기, 개화기, 꽃말, 설명, 이미지주소 FROM 꽃 WHERE 이름 = ?";
+			dbConn.DB_Connect();
+			PreparedStatement ps = dbConn.con.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			ps.setString(1, this.이름);
+			ResultSet rs = ps.executeQuery();
+			
+			while (rs.next()) {
+
+				flowerNameTextField.setText(rs.getString("이름")); 
+				flowerKindTextField.setText(rs.getString("종류"));
+				flowerOriginTextField.setText(rs.getString("원산지"));
+				flowerPlanterTextField.setText(rs.getString("파종기")); 
+				flowerBloomTextField.setText(rs.getString("개화기"));
+				flowerHorseTextField.setText(rs.getString("꽃말"));
+				flowerDescriptionTextField.setText(rs.getString("설명"));
+				flowerLinkTextField.setText(rs.getString("이미지주소"));
+				break;
+			}
+			
+			
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
 	}
 }

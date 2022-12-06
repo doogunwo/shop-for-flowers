@@ -59,6 +59,7 @@ public class AddOrder extends JFrame {
 	private JTextField bookNameTextField;
 	private JTextField bookHeaderTextField_1;
 	private JTextField bookPriceTextField;
+	private JTextField textField;
 
 	/**
 	 * Launch the application.
@@ -71,7 +72,7 @@ public class AddOrder extends JFrame {
 		this.user_phone = user_phone;
 		this.manager = manager;
 		
-		setTitle("\uB3C4\uC11C \uAD00\uB9AC \uD504\uB85C\uADF8\uB7A8 - \uB3C4\uC11C\uCD94\uAC00");
+		setTitle("꽃관리 프로그램 - 주문추가");
 		setBounds(100, 100, 848, 622);
 		contentPane = new JPanel();
 		contentPane.setBackground(SystemColor.menu);
@@ -89,14 +90,14 @@ public class AddOrder extends JFrame {
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new LineBorder(new Color(128, 128, 128), 2, true));
 		panel_1.setBackground(new Color(255, 255, 255));
-		panel_1.setBounds(12, 31, 805, 165);
+		panel_1.setBounds(12, 31, 805, 215);
 		contentPane.add(panel_1);
 		panel_1.setLayout(null);
 		
 		//책 이릅 라벨
 		JLabel bookNameLabel = new JLabel("고객 전화번호");
 		bookNameLabel.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		bookNameLabel.setBounds(12, 10, 94, 46);
+		bookNameLabel.setBounds(12, 10, 104, 46);
 		panel_1.add(bookNameLabel);
 
 		// 책 이름 텍스트필드
@@ -128,10 +129,10 @@ public class AddOrder extends JFrame {
 				});
 
 		// 책 저자 라벨
-		JLabel bookHeaderLabel_1 = new JLabel("주소");
+		JLabel bookHeaderLabel_1 = new JLabel("고객이름");
 		bookHeaderLabel_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
 		bookHeaderLabel_1.setHorizontalAlignment(SwingConstants.LEFT);
-		bookHeaderLabel_1.setBounds(12, 60, 46, 26);
+		bookHeaderLabel_1.setBounds(12, 60, 81, 26);
 		panel_1.add(bookHeaderLabel_1);
 
 		// 책 저자 텍스트필드
@@ -165,7 +166,7 @@ public class AddOrder extends JFrame {
 		// 책 가격 라벨
 		JLabel bookPriceLabel = new JLabel("상품번호, 수량");
 		bookPriceLabel.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		bookPriceLabel.setBounds(12, 109, 104, 26);
+		bookPriceLabel.setBounds(12, 155, 104, 26);
 		panel_1.add(bookPriceLabel);
 		
 		JLabel lblNewLabel_1 = new JLabel("");
@@ -176,7 +177,7 @@ public class AddOrder extends JFrame {
 		bookPriceTextField = new JTextField();
 		bookPriceTextField.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
 		bookPriceTextField.setColumns(10);
-		bookPriceTextField.setBounds(118, 109, 407, 26);
+		bookPriceTextField.setBounds(118, 155, 407, 26);
 		panel_1.add(bookPriceTextField);
 		bookPriceTextField.addKeyListener(new KeyAdapter() {
 	         public void keyPressed(KeyEvent ke) {
@@ -228,19 +229,17 @@ public class AddOrder extends JFrame {
 		lblNewLabel.setBounds(91, 202, 225, 15);
 		panel_1.add(lblNewLabel);
 		
-
-		// 책 줄거리 패널
-		JPanel panel_2 = new JPanel();
-		panel_2.setBackground(new Color(255, 255, 255));
-		panel_2.setBounds(12, 223, 805, 350);
-		contentPane.add(panel_2);
-		panel_2.setLayout(null);
+		JLabel bookHeaderLabel_1_1 = new JLabel("주소");
+		bookHeaderLabel_1_1.setHorizontalAlignment(SwingConstants.LEFT);
+		bookHeaderLabel_1_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+		bookHeaderLabel_1_1.setBounds(12, 108, 46, 26);
+		panel_1.add(bookHeaderLabel_1_1);
 		
-
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setViewportBorder(new LineBorder(new Color(128, 128, 128), 1, true));
-		scrollPane.setBounds(0, 0, 805, 350);
-		panel_2.add(scrollPane);
+		textField = new JTextField();
+		textField.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+		textField.setColumns(10);
+		textField.setBounds(118, 108, 157, 26);
+		panel_1.add(textField);
 
 		// 책 추가 버튼
 		bookAddButton = new JButton("\uB3C4\uC11C \uCD94\uAC00");
