@@ -62,7 +62,8 @@ import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 
 public class ItemSearch extends JFrame {
-	//dbConnector dbConn = new dbConnector();
+	DB_Connector dbConn = new DB_Connector();
+	
 	public String user_phone = "";
 	public Boolean manager = false;
 	private JPanel contentPane;
@@ -95,7 +96,7 @@ public class ItemSearch extends JFrame {
 	public ItemSearch(String user_phone, Boolean manager) {
 		this.user_phone = user_phone;
 		this.manager = manager;
-		setTitle("꽃관리 프로그램 - 고객관리");
+		setTitle("꽃관리 프로그램 - 상품검색");
 		setBounds(100, 100, 881, 706);
 		contentPane = new JPanel(); // 메인 프레임
 		contentPane.setBackground(SystemColor.menu);
@@ -210,7 +211,7 @@ public class ItemSearch extends JFrame {
 		// 검색 항목 콤보박스
 		searchComboBox = new JComboBox();
 		searchComboBox.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 14));
-		searchComboBox.setModel(new DefaultComboBoxModel(new String[] {"상품번호", "상품명", "카테고리"}));
+		searchComboBox.setModel(new DefaultComboBoxModel(new String[] {"전체", "상품고유번호", "상품명", "카테고리", "가격", "재고"}));
 		searchComboBox.setBackground(Color.WHITE);
 		searchComboBox.setBounds(0, 0, 129, 38);
 		panel.add(searchComboBox);
@@ -263,54 +264,22 @@ public class ItemSearch extends JFrame {
 				//정렬 되어 보이지만 실제 데이터는 정렬되어 있지 않음
 				int row = table.convertRowIndexToModel(row_index);		// 실제 모델에 저장되어 있는 인덱스 저장
 				int col = table.convertColumnIndexToModel(col_index);	// 실제 모델에 저장되어 있는 인덱스 저장
-				String book_title = table.getModel().getValueAt(row, 0).toString(); // 클릭한 열의 책 제목을 저장
-				String book_ISBN = ""; // 클릭한 책의 ISBN을 저장할 변수
-				try { // DB 접근
-
-					ResultSet rs = dbConn.executeQuery("SELECT BOOK_ISBN\r\n" + "FROM BOOK\r\n" + "WHERE BOOK_TITLE ='"
-							+ book_title + "' AND BOOK_PRE = TRUE;"); // DB에서 책 제목으로 ISBN 검색
-					while (rs.next()) {
-						book_ISBN = rs.getString("BOOK_ISBN"); // ISBN 저장
-					}
-				} catch (SQLException e2) {
-					e2.printStackTrace();
-					System.out.println("SQL 실행 에러");
-				}
-				if (manager) {
-					EditableBookInfo manager_book_info = new EditableBookInfo(book_ISBN, user_phone, manager);
+				String itemNumber = table.getModel().getValueAt(row, 0).toString(); 
+					
+						
+					ItemInfo itemInfo = new ItemInfo(itemNumber); // 책 정보창 객체 생성 (매개변수 : 클릭한 책의 ISBN)
 					// 책정보창에서 창을 닫으면 호출되는 메소드
-					manager_book_info.addWindowListener(new WindowAdapter() {
+					itemInfo.addWindowListener(new WindowAdapter() {
 						@Override
 						public void windowClosing(WindowEvent e) {
 							try { // DB 접근
-								ResultSet rs = dbConn.executeQuery(
-										"SELECT BOOK_TITLE, BOOK_AUTHOR, BOOK_PUB, BOOK_CATEGORY, BOOK_ISBN, BOOK_GRADE, BOOK_RENT_COUNT, BOOK_APPEND_DATE FROM BOOK WHERE BOOK_PRE = TRUE;");
+								String query = "SELECT 상품고유번호, 상품명, 카테고리, 가격, 재고, 이미지 FROM 상품";
+								dbConn.DB_Connect();
+								Statement stmt = dbConn.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+							            ResultSet.CONCUR_UPDATABLE);
+								ResultSet rs = stmt.executeQuery(query);
+								
 								set_table(rs);
-								setTrs();
-								setFilter();
-							} catch (SQLException e1) {
-								e1.printStackTrace();
-								System.out.println("도서 검색창 테이블 구성중 SQL 실행 에러");
-							}
-							e.getWindow().dispose();
-						}
-					});
-
-					manager_book_info.setLocationRelativeTo(null); // 화면중앙에 출력
-					manager_book_info.setResizable(false); // 창 크기 고정
-					manager_book_info.setVisible(true); // 책 정보창 띄움
-				} else {
-					BookInfo bookinfo = new BookInfo(book_ISBN, user_phone); // 책 정보창 객체 생성 (매개변수 : 클릭한 책의 ISBN)
-					// 책정보창에서 창을 닫으면 호출되는 메소드
-					bookinfo.addWindowListener(new WindowAdapter() {
-						@Override
-						public void windowClosing(WindowEvent e) {
-							try { // DB 접근
-								ResultSet rs = dbConn.executeQuery(
-										"SELECT BOOK_TITLE, BOOK_AUTHOR, BOOK_PUB, BOOK_CATEGORY, BOOK_ISBN, BOOK_GRADE, BOOK_RENT_COUNT, BOOK_APPEND_DATE FROM BOOK WHERE BOOK_PRE = TRUE;");
-								set_table(rs);
-								setTrs();
-								setFilter();
 							} catch (SQLException e1) {
 								e1.printStackTrace();
 								System.out.println("도서 검색창 테이블 구성중 SQL 실행 에러");
@@ -319,11 +288,11 @@ public class ItemSearch extends JFrame {
 						}
 					});
 					
-					bookinfo.setLocationRelativeTo(null); // 화면중앙에 출력
-					bookinfo.setResizable(false); // 창 크기 고정
-					bookinfo.setVisible(true); // 책 정보창 띄움
+					itemInfo.setLocationRelativeTo(null); // 화면중앙에 출력
+					itemInfo.setResizable(false); // 창 크기 고정
+					itemInfo.setVisible(true); // 책 정보창 띄움
+					
 				}
-			}
 		});
 
 		table.setBackground(Color.WHITE);
@@ -349,10 +318,15 @@ public class ItemSearch extends JFrame {
 		
 		try { // DB 접근
 			//db에 있는 책 정보 검색
-			ResultSet rs = dbConn.executeQuery(
-					"SELECT BOOK_TITLE, BOOK_AUTHOR, BOOK_PUB, BOOK_CATEGORY, BOOK_ISBN, BOOK_GRADE, BOOK_RENT_COUNT, BOOK_APPEND_DATE FROM BOOK WHERE BOOK_PRE = TRUE;");
+			String query = "SELECT 상품고유번호, 상품명, 카테고리, 가격, 재고, 이미지 FROM 상품";
+			dbConn.DB_Connect();
+			Statement stmt = dbConn.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+		            ResultSet.CONCUR_UPDATABLE);
+			ResultSet rs = stmt.executeQuery(query);
+			
 			set_table(rs);
-			setTrs();
+			
+			//setTrs();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("SQL 실행 에러");
@@ -366,96 +340,12 @@ public class ItemSearch extends JFrame {
 		contentPane.add(panel_2);
 		panel_2.setLayout(null);
 		
-		//카테고리 필터링 
-		
-		// 카테고리 체크박스
-		
-		jcb[0] = new JCheckBox("미분류");
-		jcb[0].setBackground(Color.WHITE);
-		jcb[0].setFont(new Font("한컴산뜻돋움", Font.PLAIN, 12));
-		jcb[0].setBounds(8, 36, 107, 23);
-		panel_2.add(jcb[0]);
-		
-
-		// 카테고리 체크박스
-		jcb[1] = new JCheckBox("교양과학");
-		jcb[1].setBackground(Color.WHITE);
-		jcb[1].setFont(new Font("한컴산뜻돋움", Font.PLAIN, 12));
-		jcb[1].setBounds(8, 56, 107, 23);
-		panel_2.add(jcb[1]);
-
-		// 카테고리 체크박스
-		jcb[2] = new JCheckBox("시");
-		jcb[2].setBackground(Color.WHITE);
-		jcb[2].setFont(new Font("한컴산뜻돋움", Font.PLAIN, 12));
-		jcb[2].setBounds(8, 81, 107, 23);
-		panel_2.add(jcb[2]);
-
-		// 카테고리 체크박스
-		jcb[3] = new JCheckBox("예술");
-		jcb[3].setBackground(Color.WHITE);
-		jcb[3].setFont(new Font("한컴산뜻돋움", Font.PLAIN, 12));
-		jcb[3].setBounds(8, 106, 107, 23);
-		panel_2.add(jcb[3]);
-
-		// 카테고리 체크박스
-		jcb[4] = new JCheckBox("소설");
-		jcb[4].setBackground(Color.WHITE);
-		jcb[4].setFont(new Font("한컴산뜻돋움", Font.PLAIN, 12));
-		jcb[4].setBounds(8, 131, 107, 23);
-		panel_2.add(jcb[4]);
-
-		// 카테고리 체크박스
-		jcb[5]= new JCheckBox("\uB9CC\uD654");
-		jcb[5].setBackground(Color.WHITE);
-		jcb[5].setFont(new Font("한컴산뜻돋움", Font.PLAIN, 12));
-		jcb[5].setBounds(8, 156, 107, 23);
-		panel_2.add(jcb[5]);
-
-		// 카테고리 체크박스
-		jcb[6] = new JCheckBox("\uC5B4\uB9B0\uC774 / \uCCAD\uC18C\uB144");
-		jcb[6].setBackground(Color.WHITE);
-		jcb[6].setFont(new Font("한컴산뜻돋움", Font.PLAIN, 12));
-		jcb[6].setBounds(8, 181, 107, 23);
-		panel_2.add(jcb[6]);
-
-		// 카테고리 체크박스
-		jcb[7] = new JCheckBox("\uC218\uD5D8\uC11C / \uC790\uACA9\uC99D");
-		jcb[7].setBackground(Color.WHITE);
-		jcb[7].setFont(new Font("한컴산뜻돋움", Font.PLAIN, 12));
-		jcb[7].setBounds(8, 204, 107, 23);
-		panel_2.add(jcb[7]);
-		
 		
 
 		
 		
-		for( t = 0; t < 8; t++) {
-			jcb[t].addItemListener(new ItemListener() {
-				private int myIndex;	//자체 인덱스를 저장하기 위해 자체 변수 지정
-				{
-					this.myIndex = t;
-				}
-				public void itemStateChanged(ItemEvent e) {	//체크 박스 상태가 변한다면
-					if(e.getStateChange() == ItemEvent.SELECTED) {
-						categoryFilter.put(jcb[myIndex].getText(), RowFilter.regexFilter(jcb[myIndex].getText(), 3));	//테이블 3행에 있는 카테고리명을 필터항목에 추가시켜 해시맵에 삽입
-						checkNum++;
-					}else {
-						checkNum--;
-						if(categoryFilter.containsKey(jcb[myIndex].getText()))	//체크가 되어있지 않다면 해시맵에 해당 카테고리 키 값 여부를 확인하여 있으면 제거
-							categoryFilter.remove(jcb[myIndex].getText());
-						
-					}
-					combineOrAndFilters();
-					if(checkNum == 0) {
-						trs.setRowFilter(null);	//만약 체크 개수가 0이라면 필터 제거
-						combineOrAndFilters();
-					}
-					
-				}
-				
-			});
-		}
+		
+		
 
 		// 분류 라벨
 		JLabel sortLabel = new JLabel("\uC815\uB82C");
@@ -467,19 +357,29 @@ public class ItemSearch extends JFrame {
 
 		sortKeys = new ArrayList<>();
 		
-		//제목순 라디오버튼
-		headerRadioButton = new JRadioButton("이름순");
+		//상품명순 라디오버튼
+		headerRadioButton = new JRadioButton("상품명순");
 		
 		buttonGroup_1.add(headerRadioButton);
 		headerRadioButton.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.SELECTED) {
-					sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
-				}else {
-					sortKeys.clear();
+					try {
+						
+					String query = "SELECT 상품고유번호, 상품명, 카테고리, 가격, 재고, 이미지 FROM 상품 ORDER BY 상품명 ASC";
+					dbConn.DB_Connect();
+					Statement stmt = dbConn.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+				            ResultSet.CONCUR_UPDATABLE);
+					ResultSet rs = stmt.executeQuery(query);
 					
+					set_table(rs);
+					}catch(SQLException e1) {
+						e1.printStackTrace();
+					}
+				}else {
+
 				}
-				trs.setSortKeys(sortKeys);
+				//trs.setSortKeys(sortKeys);
 			}
 		});
 		headerRadioButton.setSelected(false);
@@ -495,39 +395,90 @@ public class ItemSearch extends JFrame {
 		recentRadioButton.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.SELECTED) {
-					sortKeys.add(new RowSorter.SortKey(7, SortOrder.DESCENDING));
-				}else {
-					sortKeys.clear();
+					try {
+						
+					String query = "SELECT 상품고유번호, 상품명, 카테고리, 가격, 재고, 이미지 FROM 상품";
+					dbConn.DB_Connect();
+					Statement stmt = dbConn.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+				            ResultSet.CONCUR_UPDATABLE);
+					ResultSet rs = stmt.executeQuery(query);
 					
+					set_table(rs);
+					}catch(SQLException e1) {
+						e1.printStackTrace();
+					}
+				}else {
+
 				}
-				trs.setSortKeys(sortKeys);
+				//trs.setSortKeys(sortKeys);
 			}
 		});
 		
 		recentRadioButton.setBackground(Color.WHITE);
 		buttonGroup_1.add(recentRadioButton);
 		recentRadioButton.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 12));
-		recentRadioButton.setBounds(12, 86, 113, 23);
+		recentRadioButton.setBounds(12, 115, 113, 23);
 		panel_2.add(recentRadioButton);
 
-		// 인기순 라디오버튼
+		// 재고순 라디오버튼
 		popularityRadioButton = new JRadioButton("재고순");
 		popularityRadioButton.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.SELECTED) {
-					sortKeys.add(new RowSorter.SortKey(6, SortOrder.DESCENDING));
-				}else {
-					sortKeys.clear();
+					try {
+						
+					String query = "SELECT 상품고유번호, 상품명, 카테고리, 가격, 재고, 이미지 FROM 상품 ORDER BY 재고 ASC";
+					dbConn.DB_Connect();
+					Statement stmt = dbConn.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+				            ResultSet.CONCUR_UPDATABLE);
+					ResultSet rs = stmt.executeQuery(query);
 					
+					set_table(rs);
+					}catch(SQLException e1) {
+						e1.printStackTrace();
+					}
+				}else {
+
 				}
-				trs.setSortKeys(sortKeys);
+				//trs.setSortKeys(sortKeys);
 			}
 		});
 		popularityRadioButton.setBackground(Color.WHITE);
 		buttonGroup_1.add(popularityRadioButton);
 		popularityRadioButton.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 12));
-		popularityRadioButton.setBounds(12, 122, 113, 23);
+		popularityRadioButton.setBounds(12, 147, 113, 23);
 		panel_2.add(popularityRadioButton);
+		
+		// 최신순
+		JRadioButton popularityRadioButton_1 = new JRadioButton("최신순");
+		popularityRadioButton_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 12));
+		popularityRadioButton_1.setBackground(Color.WHITE);
+		popularityRadioButton_1.setBounds(12, 83, 113, 23);
+		panel_2.add(popularityRadioButton_1);
+		
+		popularityRadioButton_1.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if(e.getStateChange() == ItemEvent.SELECTED) {
+					try {
+						
+					String query = "SELECT 상품고유번호, 상품명, 카테고리, 가격, 재고, 이미지 FROM 상품 ";
+					dbConn.DB_Connect();
+					Statement stmt = dbConn.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+				            ResultSet.CONCUR_UPDATABLE);
+					ResultSet rs = stmt.executeQuery(query);
+					
+					set_table(rs);
+					}catch(SQLException e1) {
+						e1.printStackTrace();
+					}
+				}else {
+
+				}
+				//trs.setSortKeys(sortKeys);
+			}
+		});
+		
+		buttonGroup_1.add(popularityRadioButton_1);
 	}
 	
 	//AndFilter와 OrFilter 결합 함수
@@ -548,25 +499,25 @@ public class ItemSearch extends JFrame {
 	}
 	
 	//테이블 필터링을 위한 초기화 함수
-	public void setTrs() {
-		trs = new TableRowSorter<>(table.getModel()); 	
-		table.setRowSorter(trs);
-		trs.setComparator(5, new Comparator<Object>(){	//JTable은 기본적으로 문자열로 정렬하기 때문에 두자리수 이상부터 적용이안되서 따로 비교하는 함수를 작성
-			        public int compare(Object o1, Object o2){
-			        	Integer a = Integer.parseInt((String) o1);
-			        	Integer b = Integer.parseInt((String) o2);
-			            return a.compareTo(b);
-			        }
-			    });
-				
-				trs.setComparator(6, new Comparator<Object>(){	//JTable은 기본적으로 문자열로 정렬하기 때문에 두자리수 이상부터 적용이안되서 따로 비교하는 함수를 작성
-			        public int compare(Object o1, Object o2){
-			        	Integer a = Integer.parseInt((String) o1);
-			        	Integer b = Integer.parseInt((String) o2);
-			            return a.compareTo(b);
-			        }
-			    });
-	}
+//	public void setTrs() {
+//		trs = new TableRowSorter<>(table.getModel()); 	
+//		table.setRowSorter(trs);
+//		trs.setComparator(5, new Comparator<Object>(){	//JTable은 기본적으로 문자열로 정렬하기 때문에 두자리수 이상부터 적용이안되서 따로 비교하는 함수를 작성
+//			        public int compare(Object o1, Object o2){
+//			        	Integer a = Integer.parseInt((String) o1);
+//			        	Integer b = Integer.parseInt((String) o2);
+//			            return a.compareTo(b);
+//			        }
+//			    });
+//				
+//				trs.setComparator(6, new Comparator<Object>(){	//JTable은 기본적으로 문자열로 정렬하기 때문에 두자리수 이상부터 적용이안되서 따로 비교하는 함수를 작성
+//			        public int compare(Object o1, Object o2){
+//			        	Integer a = Integer.parseInt((String) o1);
+//			        	Integer b = Integer.parseInt((String) o2);
+//			            return a.compareTo(b);
+//			        }
+//			    });
+//	}
 	
 	//검색 결과 도출하는 이벤트 함수
 	public void search_event() {
@@ -575,29 +526,36 @@ public class ItemSearch extends JFrame {
 			String search_how = "전체"; // 검색 조건이 들어갈 search_how (제목, 저자..)
 			ResultSet rs;
 			switch (searchComboBox.getSelectedItem().toString()) {
-			case "제목": // 검색조건이 "제목"일 때
-				search_how = "TITLE";
+			case "상품고유번호": // 검색조건이 "제목"일 때
+				search_how = "상품고유번호";
 				break;
-			case "저자": // 검색조건이 "저자"일 때
-				search_how = "AUTHOR";
+			case "상품명": // 검색조건이 "저자"일 때
+				search_how = "상품명";
 				break;
-			case "출판사": // 검색조건이 "출판사"일 때
-				search_how = "PUB";
+			case "카테고리": // 검색조건이 "출판사"일 때
+				search_how = "카테고리";
 				break;
+			case "가격":
+				search_how = "가격";
+			case "재고":
+				search_how = "재고";
 			case "전체": // 검색조건이 "전체"일 때
-				search_how = "TITLE LIKE '" + searchTextField.getText() + "%' OR BOOK_AUTHOR LIKE '"
-						+ searchTextField.getText() + "%' OR BOOK_PUB";
+				search_how = "(상품고유번호 || 상품명 || 카테고리 || 가격 || 재고)";
 				break;
 			}
-			rs = dbConn.executeQuery("SELECT BOOK_TITLE, BOOK_AUTHOR, BOOK_PUB, BOOK_CATEGORY, BOOK_ISBN, BOOK_GRADE, BOOK_RENT_COUNT, BOOK_APPEND_DATE\r\n"
-					+ "FROM BOOK\r\n" + "WHERE (BOOK_" + search_how + " LIKE '" + searchTextField.getText()
-					+ "%')AND BOOK_PRE = TRUE;"); // DB에서 검생창에 입력된 값으로 책 정보 검색
+			dbConn.DB_Connect();
+			String query = "SELECT 상품고유번호, 상품명, 카테고리, 가격, 재고\r\n"
+					+ "FROM 상품\r\n" + "WHERE " + search_how + " LIKE '%" + searchTextField.getText()
+					+ "%'";
+			PreparedStatement ps = dbConn.con.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			rs = ps.executeQuery();
+			
 			if (rs != null) // 검색결과가 있으면
 			{
 				//나중에 체크박스 원상복구시키는 코드도 여기 작성  
 				System.out.println("검색완료");
 				set_table(rs); // 테이블 재구성
-				setTrs();	//테이블을 재구성을 했으므로 필터링 초기화도 같이해줌
+				//setTrs();	//테이블을 재구성을 했으므로 필터링 초기화도 같이해줌
 			}
 			else // 없으면
 				System.out.println("검색결과가 없습니다.");
@@ -608,37 +566,37 @@ public class ItemSearch extends JFrame {
 	}
 	
 	
-	public void setFilter() {
-		if(canborrowRadioButton.isSelected()) {
-			borrowFilter.put(canborrowRadioButton.getText(), RowFilter.regexFilter(canborrowRadioButton.getText(), 4));	//테이블 5행에 있는 대출여부명을 필터항목에 추가시켜 해시맵에 삽입
-		}else if(borrowingNewRadioButton.isSelected()) {
-			borrowFilter.put(borrowingNewRadioButton.getText(), RowFilter.regexFilter(borrowingNewRadioButton.getText(), 4));	//테이블 5행에 있는 대출여부명을 필터항목에 추가시켜 해시맵에 삽입
-		}
-		
-		for(int i = 0; i < 8; i++) {
-			if(jcb[i].isSelected()) {
-				categoryFilter.put(jcb[i].getText(), RowFilter.regexFilter(jcb[i].getText(), 3));	//테이블 3행에 있는 카테고리명을 필터항목에 추가시켜 해시맵에 삽입
-				checkNum++;
-			}
-			combineOrAndFilters();
-			
-			if(headerRadioButton.isSelected()) {
-				sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
-			}
-			else if(recentRadioButton.isSelected()) {
-				sortKeys.add(new RowSorter.SortKey(7, SortOrder.DESCENDING));
-			}else if(popularityRadioButton.isSelected()) {
-				sortKeys.add(new RowSorter.SortKey(6, SortOrder.DESCENDING));
-			}else if(gradeRadioButton.isSelected()) {
-				sortKeys.add(new RowSorter.SortKey(5, SortOrder.DESCENDING));
-			}
-			
-			trs.setSortKeys(sortKeys);
-			
-			
-			
-		}
-	}
+//	public void setFilter() {
+//		if(canborrowRadioButton.isSelected()) {
+//			borrowFilter.put(canborrowRadioButton.getText(), RowFilter.regexFilter(canborrowRadioButton.getText(), 4));	//테이블 5행에 있는 대출여부명을 필터항목에 추가시켜 해시맵에 삽입
+//		}else if(borrowingNewRadioButton.isSelected()) {
+//			borrowFilter.put(borrowingNewRadioButton.getText(), RowFilter.regexFilter(borrowingNewRadioButton.getText(), 4));	//테이블 5행에 있는 대출여부명을 필터항목에 추가시켜 해시맵에 삽입
+//		}
+//		
+//		for(int i = 0; i < 8; i++) {
+//			if(jcb[i].isSelected()) {
+//				categoryFilter.put(jcb[i].getText(), RowFilter.regexFilter(jcb[i].getText(), 3));	//테이블 3행에 있는 카테고리명을 필터항목에 추가시켜 해시맵에 삽입
+//				checkNum++;
+//			}
+//			combineOrAndFilters();
+//			
+//			if(headerRadioButton.isSelected()) {
+//				sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
+//			}
+//			else if(recentRadioButton.isSelected()) {
+//				sortKeys.add(new RowSorter.SortKey(7, SortOrder.DESCENDING));
+//			}else if(popularityRadioButton.isSelected()) {
+//				sortKeys.add(new RowSorter.SortKey(6, SortOrder.DESCENDING));
+//			}else if(gradeRadioButton.isSelected()) {
+//				sortKeys.add(new RowSorter.SortKey(5, SortOrder.DESCENDING));
+//			}
+//			
+//			trs.setSortKeys(sortKeys);
+//			
+//			
+//			
+//		}
+//	}
 
 	// ResultSet을 받아 테이블 재구성하는 함수
 	public void set_table(ResultSet rs) throws SQLException {
@@ -650,61 +608,26 @@ public class ItemSearch extends JFrame {
 				rs.beforeFirst(); // 다시 앞으로 이동시킴
 			}
 
-			String[][] data = new String[row][8]; // 테이블에 넣을 데이터를 저장할 배열
+			String[][] data = new String[row][5]; // 테이블에 넣을 데이터를 저장할 배열
 			int i = 0;
 			// 일은 데이터로 테이블 구성
 			while (rs.next()) {
-				data[i][0] = rs.getString("BOOK_TITLE");
-				data[i][1] = rs.getString("BOOK_AUTHOR");
-				data[i][2] = rs.getString("BOOK_PUB");
-				data[i][3] = rs.getString("BOOK_CATEGORY");
-				
-				String book_ISBN = rs.getString("BOOK_ISBN");
-				//해당 책이 대출중인 도서인지 검색
-				ResultSet rs_rent = dbConn.executeQuery(
-						"SELECT BOOK_ISBN FROM RENT WHERE BOOK_ISBN='" + book_ISBN + "' AND RENT_RETURN_YN IS NULL;"); 
-				if (rs_rent.next()) {
-					if (book_ISBN.equals(rs_rent.getString("BOOK_ISBN"))) { // 검색해서 나온 ISBN과 해당 책의 ISBN이 같으면 (대출중인 도서이면)
-						data[i][4] = "대출중";
-					}
-				} else {
-					data[i][4] = "대출가능";
-				}
-				
-				
-				//해당 도서의 평점 개수 가져오기
-				
-				int bookReviewGrade = Integer.parseInt(rs.getString("BOOK_GRADE"));
-				int bookReviewCnt = 0;
-				ResultSet rs1 = dbConn.executeQuery(
-						"SELECT COUNT(*) FROM REVIEW WHERE BOOK_ISBN = '" + book_ISBN + "';"
-						);
-				if(rs1.next()) {
-					bookReviewCnt = rs1.getInt(1);
-				}
-				
-				//책 평점 매기기
-				int bookScore = 0;
-				if(bookReviewCnt != 0) {
-					bookScore = bookReviewGrade / bookReviewCnt;
-				}
-				
-				data[i][5] = Integer.toString(bookScore);
-				
-				data[i][6] = rs.getString("BOOK_RENT_COUNT");
-				data[i][7] = rs.getString("BOOK_APPEND_DATE");
+				data[i][0] = rs.getString("상품고유번호");
+				data[i][1] = rs.getString("상품명");
+				data[i][2] = rs.getString("카테고리");
+				data[i][3] = rs.getString("가격");
+				data[i][4] = rs.getString("재고");
 				
 				i++;
 			}
-			String[] columns = { "상품번호", "상품명", "카테고리", "총주문수", "가격", "재고수"}; // 테이블의 구성
+			String[] columns = { "상품고유번호", "상품명", "카테고리", "가격", "재고"}; // 테이블의 구성
 			table.setModel(new DefaultTableModel(data, columns)); // 테이들 다시 세팅
 			
-			table.removeColumn(table.getColumnModel().getColumn(6));	//평점, 대여횟수, 도서추가날짜 컬럼들을 숨김
-			table.removeColumn(table.getColumnModel().getColumn(6));
-			table.removeColumn(table.getColumnModel().getColumn(6));
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("SQL 실행 에러");
 		}
+	
 	}
 }

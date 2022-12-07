@@ -50,17 +50,19 @@ import javax.swing.UIManager;
 import javax.swing.JTextField;
 
 public class AddItem extends JFrame {
+	DB_Connector dbConn = new DB_Connector();
 
 	public String user_phone="";	//유저 PK 정보를 저장할 변수
 	public Boolean manager = false;	//유저가 관리자인지 확인할 변수
 	int ret = 1;	//파일 선택 여부를 알려주는 변수
 	JButton bookAddButton;
 	private JPanel contentPane;
-	private JTextField bookNameTextField;
-	private JTextField bookHeaderTextField_1;
-	private JTextField bookPriceTextField;
-	private JTextField textField;
-	private JTextField textField_1;
+	private JTextField itemName;
+	private JTextField itemCategory;
+	private JTextField itemPrice;
+	private JTextField itemTotal;
+	private JTextField itemImage;
+	private JTextField itemNumber;
 
 	/**
 	 * Launch the application.
@@ -69,9 +71,8 @@ public class AddItem extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public AddItem(String user_phone, Boolean manager) {
-		this.user_phone = user_phone;
-		this.manager = manager;
+	public AddItem() {
+
 		
 		setTitle("꽃관리 프로그램 - 상품추가");
 		setBounds(100, 100, 848, 622);
@@ -91,7 +92,7 @@ public class AddItem extends JFrame {
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new LineBorder(new Color(128, 128, 128), 2, true));
 		panel_1.setBackground(new Color(255, 255, 255));
-		panel_1.setBounds(12, 31, 805, 257);
+		panel_1.setBounds(12, 31, 805, 293);
 		contentPane.add(panel_1);
 		panel_1.setLayout(null);
 		
@@ -102,32 +103,12 @@ public class AddItem extends JFrame {
 		panel_1.add(bookNameLabel);
 
 		// 책 이름 텍스트필드
-		bookNameTextField = new JTextField();
-		bookNameTextField.setFont(new Font("함초롬돋움", Font.BOLD, 22));
-		bookNameTextField.setBounds(136, 17, 407, 26);
-		panel_1.add(bookNameTextField);
-		bookNameTextField.setColumns(10);
-		bookNameTextField.getDocument().addDocumentListener(new DocumentListener() {
-			  public void changedUpdate(DocumentEvent e) {
-				    changed();
-				  }
-				  public void removeUpdate(DocumentEvent e) {
-				    changed();
-				  }
-				  public void insertUpdate(DocumentEvent e) {
-				    changed();
-				  }
+		itemName = new JTextField();
+		itemName.setFont(new Font("함초롬돋움", Font.BOLD, 22));
+		itemName.setBounds(136, 17, 407, 26);
+		panel_1.add(itemName);
+		itemName.setColumns(10);
 
-				  public void changed() {
-				     if (bookISBNTextField.getText().equals("")){
-				    	 bookAddButton.setEnabled(false);
-				     }
-				     else {
-				    	 bookAddButton.setEnabled(true);
-				    }
-
-				  }
-				});
 
 		// 책 저자 라벨
 		JLabel bookHeaderLabel_1 = new JLabel("카테고리");
@@ -137,193 +118,160 @@ public class AddItem extends JFrame {
 		panel_1.add(bookHeaderLabel_1);
 
 		// 책 저자 텍스트필드
-		bookHeaderTextField_1 = new JTextField();
-		bookHeaderTextField_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		bookHeaderTextField_1.setColumns(10);
-		bookHeaderTextField_1.setBounds(136, 60, 157, 26);
-		panel_1.add(bookHeaderTextField_1);
-		bookHeaderTextField_1.getDocument().addDocumentListener(new DocumentListener() {
-			  public void changedUpdate(DocumentEvent e) {
-				    changed();
-				  }
-				  public void removeUpdate(DocumentEvent e) {
-				    changed();
-				  }
-				  public void insertUpdate(DocumentEvent e) {
-				    changed();
-				  }
+		itemCategory = new JTextField();
+		itemCategory.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+		itemCategory.setColumns(10);
+		itemCategory.setBounds(136, 60, 157, 26);
+		panel_1.add(itemCategory);
 
-				  public void changed() {
-				     if (bookISBNTextField.getText().equals("")){
-				    	 bookAddButton.setEnabled(false);
-				     }
-				     else {
-				    	 bookAddButton.setEnabled(true);
-				    }
-
-				  }
-				});
 
 		// 책 가격 라벨
 		JLabel bookPriceLabel = new JLabel("가격");
 		bookPriceLabel.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
 		bookPriceLabel.setBounds(12, 109, 104, 26);
 		panel_1.add(bookPriceLabel);
+		
+		
+		JLabel lblNewLabel_1 = new JLabel("");
+		lblNewLabel_1.setForeground(Color.RED);
+		lblNewLabel_1.setBounds(318, 120, 225, 15);
+		panel_1.add(lblNewLabel_1);
+		
 		// 책 가격 텍스트필드
-		bookPriceTextField = new JTextField();
-		bookPriceTextField.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		bookPriceTextField.setColumns(10);
-		bookPriceTextField.setBounds(136, 109, 157, 26);
-		panel_1.add(bookPriceTextField);
-		bookPriceTextField.addKeyListener(new KeyAdapter() {
+		itemPrice = new JTextField();
+		itemPrice.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+		itemPrice.setColumns(10);
+		itemPrice.setBounds(136, 109, 157, 26);
+		itemPrice.addKeyListener(new KeyAdapter() {
 	         public void keyPressed(KeyEvent ke) {
-	             String value = bookPriceTextField.getText();
+	             String value = itemPrice.getText();
 	             int l = value.length();
 	             if (ke.getKeyChar() >= '0' && ke.getKeyChar() <= '9' || ke.getKeyChar() == KeyEvent.VK_BACK_SPACE) {
-	            	 bookPriceTextField.setEditable(true);
+	            	 itemPrice.setEditable(true);
 	            	 lblNewLabel_1.setText("");
 	             } else {
-	            	 bookPriceTextField.setEditable(false);
+	            	 itemPrice.setEditable(false);
 	            	 lblNewLabel_1.setText("가격은 숫자만 가능합니다.");
 	             }
 	          }
 	       });
-		
-		bookPriceTextField.getDocument().addDocumentListener(new DocumentListener() {
-			  public void changedUpdate(DocumentEvent e) {
-				  
-				    changed();
-				  }
-				  public void removeUpdate(DocumentEvent e) {
-				    changed();
-				  }
-				  public void insertUpdate(DocumentEvent e) {
-				    changed();
-				  }
-				  
-				  public void changed() {
-				     if (bookISBNTextField.getText().equals("")){
-				    	 bookAddButton.setEnabled(false);
-				     }
-				     else {
-				    	 bookAddButton.setEnabled(true);
-				    }
-				   
-				     if (bookPriceTextField.getText().length() > 10) {
-				    	 bookAddButton.setEnabled(false);
-				    	 lblNewLabel_1.setText("가격은 10자리 이하만 가능합니다.");
-				     }else {
-				    	 bookAddButton.setEnabled(true);
-				    	 lblNewLabel_1.setText("");
-				     }
-
-				  }
-				});
-		
-		JLabel lblNewLabel = new JLabel("");
-		lblNewLabel.setForeground(Color.RED);
-		lblNewLabel.setBounds(91, 202, 225, 15);
-		panel_1.add(lblNewLabel);
+		panel_1.add(itemPrice);
+	
 		
 		JLabel bookPriceLabel_1 = new JLabel("재고량");
 		bookPriceLabel_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
 		bookPriceLabel_1.setBounds(12, 155, 104, 26);
 		panel_1.add(bookPriceLabel_1);
 		
-		textField = new JTextField();
-		textField.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		textField.setColumns(10);
-		textField.setBounds(136, 155, 157, 26);
-		panel_1.add(textField);
+	    // 재고량
+		itemTotal = new JTextField();
+		itemTotal.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+		itemTotal.setColumns(10);
+		itemTotal.setBounds(136, 155, 157, 26);
+		
+		JLabel lblNewLabel_2 = new JLabel("");
+		lblNewLabel_2.setForeground(Color.RED);
+		lblNewLabel_2.setBounds(318, 155, 225, 15);
+		panel_1.add(lblNewLabel_2);
+		
+		itemTotal.addKeyListener(new KeyAdapter() {
+	         public void keyPressed(KeyEvent ke) {
+	             String value = itemTotal.getText();
+	             int l = value.length();
+	             if (ke.getKeyChar() >= '0' && ke.getKeyChar() <= '9' || ke.getKeyChar() == KeyEvent.VK_BACK_SPACE) {
+	            	 itemTotal.setEditable(true);
+	            	 lblNewLabel_2.setText("");
+	             } else {
+	            	 itemTotal.setEditable(false);
+	            	 lblNewLabel_2.setText("재고량은 숫자만 가능합니다.");
+	             }
+	          }
+	       });
+		panel_1.add(itemTotal);
 		
 		JLabel bookPriceLabel_1_1 = new JLabel("상품 이미지 URL");
 		bookPriceLabel_1_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		bookPriceLabel_1_1.setBounds(12, 202, 112, 26);
+		bookPriceLabel_1_1.setBounds(12, 202, 130, 26);
 		panel_1.add(bookPriceLabel_1_1);
 		
-		textField_1 = new JTextField();
-		textField_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
-		textField_1.setColumns(10);
-		textField_1.setBounds(136, 202, 407, 26);
-		panel_1.add(textField_1);
+		itemImage = new JTextField();
+		itemImage.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+		itemImage.setColumns(10);
+		itemImage.setBounds(136, 202, 407, 26);
+		panel_1.add(itemImage);
 		
-		JButton btnNewButton = new JButton("추가하기");
-		btnNewButton.setBounds(297, 485, 243, 54);
-		contentPane.add(btnNewButton);
+		JLabel bookPriceLabel_1_1_1 = new JLabel("상품고유번호");
+		bookPriceLabel_1_1_1.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+		bookPriceLabel_1_1_1.setBounds(12, 248, 130, 26);
+		panel_1.add(bookPriceLabel_1_1_1);
+		
+		itemNumber = new JTextField();
+		itemNumber.setText("00000000");
+		itemNumber.setEnabled(false);
+		itemNumber.setEditable(false);
+		itemNumber.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 16));
+		itemNumber.setColumns(10);
+		itemNumber.setBounds(136, 248, 407, 26);
+		panel_1.add(itemNumber);
 
 		// 책 추가 버튼
-		bookAddButton = new JButton("\uB3C4\uC11C \uCD94\uAC00");
-		bookAddButton.setEnabled(false);
+		bookAddButton = new JButton("상품 추가");
 		bookAddButton.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 15));
 		bookAddButton.setBounds(348, 511, 132, 48);
 		//책 추가 버튼을 누르면 호출되는 메소드 연결
-//		bookAddButton.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				boolean isSuccess = false;
-//
-//					String sql = "insert into BOOK(\r\n"
-//							+ "BOOK_ISBN,\r\n"
-//							+ "BOOK_TITLE,\r\n"
-//							+ "BOOK_AUTHOR,\r\n"
-//							+ "BOOK_PUB,\r\n"
-//							+ "BOOK_PRICE,\r\n"
-//							+ "BOOK_DESCRIPTION,\r\n"
-//							+ "BOOK_LINK,\r\n"
-//							+ "BOOK_IMAGE,\r\n"
-//							+ "BOOK_APPEND_DATE\r\n"
-//							+ ")values(\r\n"
-//							+ "?, ?, ?, ?, ?, ?, ?, ?, date_format(now(),'%Y-%m-%d'));";
-//					
-//				try { // DB 접근
-//					PreparedStatement ps = dbConn.conn.prepareStatement(sql);
-//					
-//					ps.setString(1, bookISBNTextField.getText());			//ISBN
-//					ps.setString(2, bookNameTextField.getText());			//책 제목
-//					ps.setString(3, bookHeaderTextField_1.getText());		//책 저자
-//					ps.setString(4, bookHeaderTextField_2.getText());		//책 출판사
-//					ps.setInt(5, Integer.parseInt(bookPriceTextField.getText()));	//책 가격	(숫자만 가능)
-//					ps.setString(6, bookDescriptionTextField.getText());	//책 줄거리
-//					ps.setString(7, bookLinkTextField.getText());			//책 관련링크
-//					
-//					if(ret == 1) book_img_path.setText("images/nobook.png");
-//					//책 이미지
-//					FileInputStream fin = new FileInputStream(book_img_path.getText());
-//					ps.setBinaryStream(8, fin, fin.available());
-//					
-//					
-//					
-//					int count = ps.executeUpdate();
-//					if(count==0) {	
-//						JOptionPane.showMessageDialog(null,"ISBN : "+bookISBNTextField.getText()+"이(는) 등록에 실패하였습니다.", "신규도서등록 실패", JOptionPane.ERROR_MESSAGE);
-//					}
-//					else {		
-//						JOptionPane.showMessageDialog(null,"ISBN : "+bookISBNTextField.getText()+"이(는) 등록에 성공하였습니다.", "신규도서등록 성공", JOptionPane.NO_OPTION);
-//						isSuccess = true;
-//					}
-//				}
-//				catch (NumberFormatException e1) {
-//					e1.printStackTrace();	//에러 추적
-//					JOptionPane.showMessageDialog(null, "가격에 숫자만 입력가능합니다.", "입력 오류", JOptionPane.ERROR_MESSAGE);	//가격에 문자 입력시 메시지 호출
-//				}
-//				catch(SQLIntegrityConstraintViolationException e1) {
-//					e1.printStackTrace();
-//					JOptionPane.showMessageDialog(null, "입력한 ISBN이 이미 존재합니다.", "입력 오류", JOptionPane.ERROR_MESSAGE);	//가격에 문자 입력시 메시지 호출
-//				}
-//				catch (SQLException e1) {
-//					e1.printStackTrace();	//에러 추적
-//					System.out.println("도서추가 화면에서 SQL 실행 에러");
-//				}catch(FileNotFoundException e1) {
-//					e1.printStackTrace();
-//					System.out.println("도서추가 화면에서 파일 찾기 에러");
-//				} catch (IOException e1) {
-//					e1.printStackTrace();
-//				}
-//				if(isSuccess)
-//					dispose();	//추가 후 창 닫기
-//			}
-//		});
-//		contentPane.add(bookAddButton);	//책 추가 버튼 부착
+		bookAddButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boolean isSuccess = false;
+
+					String query = "insert into 상품(\r\n"
+							+ "상품고유번호,\r\n"
+							+ "상품명,\r\n"
+							+ "카테고리,\r\n"
+							+ "가격,\r\n"
+							+ "재고,\r\n"
+							+ "이미지\r\n"
+							+ ")values(\r\n"
+							+ "?, ?, ?, ?, ?, ?)";
+					
+				try { // DB 접근
+					dbConn.DB_Connect();
+					PreparedStatement ps = dbConn.con.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+					
+					ps.setString(1, itemNumber.getText());			
+					ps.setString(2, itemName.getText());			
+					ps.setString(3, itemCategory.getText());		
+					ps.setString(4, itemPrice.getText());		
+					ps.setString(5, itemTotal.getText());	
+					ps.setString(6, itemImage.getText());
+
+					
+					int count = ps.executeUpdate();
+					if(count==0) {	
+						JOptionPane.showMessageDialog(null,"상품 등록에 실패했습니다.", "상품등록 실패", JOptionPane.ERROR_MESSAGE);
+					}
+					else {		
+						JOptionPane.showMessageDialog(null,"상품 등록에 성공하였습니다.", "상품등록 성공", JOptionPane.NO_OPTION);
+						isSuccess = true;
+					}
+				}
+				catch (NumberFormatException e1) {
+					e1.printStackTrace();	//에러 추적
+					JOptionPane.showMessageDialog(null, "가격에 숫자만 입력가능합니다.", "입력 오류", JOptionPane.ERROR_MESSAGE);	//가격에 문자 입력시 메시지 호출
+				}
+				catch(SQLIntegrityConstraintViolationException e1) {
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "입력한 상품이 이미 존재합니다.", "입력 오류", JOptionPane.ERROR_MESSAGE);	//가격에 문자 입력시 메시지 호출
+				}
+				catch (SQLException e1) {
+					e1.printStackTrace();	//에러 추적
+					System.out.println("상품추가 화면에서 SQL 실행 에러");
+				}
+				if(isSuccess)
+					dispose();	//추가 후 창 닫기
+			}
+		});
+		contentPane.add(bookAddButton);	
 		
 	
 	}
