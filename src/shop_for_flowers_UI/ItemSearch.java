@@ -525,6 +525,7 @@ public class ItemSearch extends JFrame {
 		try { // DB 접근
 			String search_how = "전체"; // 검색 조건이 들어갈 search_how (제목, 저자..)
 			ResultSet rs;
+			System.out.println(searchComboBox.getSelectedItem().toString());
 			switch (searchComboBox.getSelectedItem().toString()) {
 			case "상품고유번호": // 검색조건이 "제목"일 때
 				search_how = "상품고유번호";
