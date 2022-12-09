@@ -26,8 +26,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.swing.DefaultComboBoxModel;
 import java.awt.SystemColor;
@@ -40,11 +42,13 @@ public class OrderSearch extends JFrame {
 	private JTextField searchTextField;
 	private JTable table;
 	private Main mainFrame;
+	DB_Connector dbConn = new DB_Connector();
 	
 	OrderManage orderManageFrame;
 	UserManage userManageFrame;
 	ItemManage itemManageFrame;
 	FlowerManage flowerManageFrame;
+	JComboBox searchComboBox;
 
 
 	public OrderSearch(String user_phone, Boolean manager) {
@@ -167,7 +171,7 @@ public class OrderSearch extends JFrame {
 		panel.setLayout(null);
 
 		// 검색 목록 콤보박스
-		JComboBox searchComboBox = new JComboBox();
+		searchComboBox = new JComboBox();
 		searchComboBox.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 15));
 		searchComboBox.setModel(new DefaultComboBoxModel(
 				new String[] { "\uC804\uCCB4", "\uC774\uB984", "\uC804\uD654\uBC88\uD638", "\uC774\uBA54\uC77C" }));
@@ -177,49 +181,26 @@ public class OrderSearch extends JFrame {
 
 		// 검색 입력 텍스트필드
 		searchTextField = new JTextField();
+		searchTextField.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// 검색 버튼 눌렀을때 작동되는 리스너
+			
+				search_event();
+			}
+		});
 		searchTextField.setBounds(129, 0, 569, 38);
 		panel.add(searchTextField);
 		searchTextField.setColumns(10);
 
 		// 검색 버튼
 		JButton searchButton = new JButton("검색");
-//		searchButton.addMouseListener(new MouseAdapter() {
-//			@Override
-//			public void mouseClicked(MouseEvent e) {
-//				try {
-//					String search_how = "전체"; // 검색 조건이 들어갈 search_how (이름, 전화번호..)
-//					ResultSet rs;
-//					switch (searchComboBox.getSelectedItem().toString()) {
-//					case "이름": // 검색조건이 "이름"일 때
-//						search_how = "NAME";
-//						break;
-//					case "전화번호": // 검색조건이 "전화번호"일 때
-//						search_how = "PHONE";
-//						break;
-//					case "이메일": // 검색조건이 "이메일"일 때
-//						search_how = "MAIL";
-//						break;
-//					case "전체": // 검색조건이 "전체"일 때
-//						search_how = "NAME LIKE '" + searchTextField.getText() + "%' OR USER_PHONE LIKE '"
-//								+ searchTextField.getText() + "%' OR USER_MAIL";
-//						break;
-//					}
-//					//rs = dbConn.executeQuery(
-//						//	"SELECT USER_NAME, USER_MAIL, USER_PHONE, USER_BIRTH, USER_SUSPENSION, USER_OUT_DATE\r\n"
-//							//		+ "FROM USER " + "WHERE (USER_" + search_how +" LIKE '" + searchTextField.getText()
-//								//	+ "%')AND USER_MANAGER = false;"); // DB에서 검생창에 입력된 값으로 유저 정보 검색
-//					if (rs != null) // 검색결과가 있으면
-//					{
-//						System.out.println("검색완료");
-//						set_table(rs); // 테이블 재구성
-//					} else // 없으면
-//						System.out.println("검색결과가 없습니다.");
-//				} catch (SQLException e2) {
-//					e2.printStackTrace();
-//					System.out.println("SQL 실행 에러");
-//				}
-//			}
-//		});
+	searchButton.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			//검색창 입력 후 엔터 입력시 작동되는 리스너
+			search_event();
+		}
+	});
 		searchButton.setBackground(new Color(220, 220, 220));
 		searchButton.setFont(new Font("한컴산뜻돋움", Font.BOLD, 14));
 		searchButton.setBounds(690, 0, 129, 38);
@@ -283,25 +264,29 @@ public class OrderSearch extends JFrame {
 		scrollPane.setViewportView(table);
 		table.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 14));
 
-		String[] columns = { "주문번호", "이름", "전홥너호", "주소", "주문상품", "수량", "날짜" }; // 테이블의 구성
+		String[] columns = { "이름", "전화번호", "상품명", "주문개수", "주소", "주문날짜"}; // 테이블의 구성
 		String[][] data;
 		DefaultTableModel model = new DefaultTableModel(null, columns);
 		table.setModel(model); // 테이블 세팅
 
-//		try { // DB 접근
-//			ResultSet rs = dbConn.executeQuery(
-//					"SELECT USER_NAME, USER_MAIL, USER_PHONE, USER_BIRTH, USER_SUSPENSION, USER_OUT_DATE FROM USER WHERE USER_MANAGER =false;");
-//			set_table(rs); // 관리자를 제외한 회원들의 정보로 테이블을 구성
-//		} catch (SQLException e) {
-//			System.out.println("회원검색창 초기 테이블 구성중 SQL 실행 에러");
-//		}
+		try { // DB 접근
+			String query = "select b.이름, b.전화번호, 상품명, 주문개수, 주소, 주문날짜 from 주문 a, 주문고객 b, 상품 c where a.전화번호=b.전화번호 and a.상품고유번호 = c.상품고유번호";
+			
+			dbConn.DB_Connect();
+			Statement stmt = dbConn.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+		            ResultSet.CONCUR_UPDATABLE);
+			ResultSet rs = stmt.executeQuery(query);
+			set_table(rs); // 관리자를 제외한 회원들의 정보로 테이블을 구성
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		// 간격 조절
 		table.getColumnModel().getColumn(0).setPreferredWidth(110);
 		table.getColumnModel().getColumn(1).setPreferredWidth(101);
 		table.getColumnModel().getColumn(2).setPreferredWidth(106);
 		table.getColumnModel().getColumn(3).setPreferredWidth(115);
 		table.getColumnModel().getColumn(4).setResizable(false);
-		table.getColumnModel().getColumn(4).setPreferredWidth(115);
+		table.getColumnModel().getColumn(5).setPreferredWidth(115);
 	}
 
 	// ResultSet을 받아 테이블 재구성하는 함수
@@ -318,29 +303,62 @@ public class OrderSearch extends JFrame {
 			int i = 0;
 			// 일은 데이터로 테이블 구성
 			while (rs.next()) {
-				data[i][0] = rs.getString("USER_NAME"); // 회원 이름
-				data[i][1] = rs.getString("USER_MAIL"); // 회원 메일
-				data[i][2] = rs.getString("USER_PHONE"); // 회원 전화번호
-				data[i][3] = rs.getString("USER_BIRTH"); // 회원 생일
-				// 회원 정지여부
-				if (rs.getString("USER_SUSPENSION") == null) {
-					data[i][4] = "N";
-				} else {
-					data[i][4] = rs.getString("USER_SUSPENSION").substring(0, 16);
-				}
-
-				// 회원 탈퇴여부
-				if (rs.getString("USER_OUT_DATE") == null) {
-					data[i][5] = "N";
-				} else {
-					data[i][5] = rs.getString("USER_OUT_DATE").substring(0, 10);
-				}
+				data[i][0] = rs.getString("이름"); // 회원 이름
+				data[i][1] = rs.getString("전화번호"); // 회원 메일
+				data[i][2] = rs.getString("상품명"); // 회원 전화번호
+				data[i][3] = rs.getString("주문개수"); // 회원 생일
+				data[i][4] = rs.getString("주소"); // 회원 생일
+				data[i][5] = rs.getString("주문날짜"); // 회원 생일
 				i++;
 			}
-			String[] columns = { "이름", "이메일", "전화번호", "생년월일", "정지여부", "탈퇴여부" }; // 테이블의 구성
+			String[] columns = { "이름", "전화번호", "상품명", "주문개수", "주소", "주문날짜" }; // 테이블의 구성
 			table.setModel(new DefaultTableModel(data, columns)); // 테이들 다시 세팅
 		} catch (SQLException e) {
-			System.out.println("회원검색창에서 테이블 구성중 SQL 실행 에러");
+			e.printStackTrace();
+		}
+	}
+	
+public void search_event() {
+		
+		try { // DB 접근
+			String search_how = "전체"; // 검색 조건이 들어갈 search_how (제목, 저자..)
+			ResultSet rs;
+			System.out.println(searchComboBox.getSelectedItem().toString());
+			switch (searchComboBox.getSelectedItem().toString()) {
+			case "이름": // 검색조건이 "제목"일 때
+				search_how = "b.이름";
+				break;
+			case "전화번호": // 검색조건이 "저자"일 때
+				search_how = "b.전화번호";
+				break;
+			case "상품명": // 검색조건이 "출판사"일 때
+				search_how = "상품명";
+				break;
+			case "주문날짜":
+				search_how = "주문날짜";
+			case "전체": // 검색조건이 "전체"일 때
+				search_how = "(b.이름 || b.전화번호 || 상품명 || 주문날짜)";
+				break;
+			}
+			dbConn.DB_Connect();
+			String query = "SELECT b.이름, b.전화번호, 상품명, 주문개수, 주소, 주문날짜\r\n"
+					+ "FROM 주문 a, 주문고객 b, 상품 c\r\n" + "WHERE a.전화번호 = b.전화번호 and a.상품고유번호 = c.상품고유번호 and " + search_how + " LIKE '%" + searchTextField.getText()
+					+ "%'";
+			PreparedStatement ps = dbConn.con.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			rs = ps.executeQuery();
+			
+			if (rs != null) // 검색결과가 있으면
+			{
+				//나중에 체크박스 원상복구시키는 코드도 여기 작성  
+				System.out.println("검색완료");
+				set_table(rs); // 테이블 재구성
+				//setTrs();	//테이블을 재구성을 했으므로 필터링 초기화도 같이해줌
+			}
+			else // 없으면
+				System.out.println("검색결과가 없습니다.");
+		} catch (SQLException e2) {
+			e2.printStackTrace();
+			System.out.println("SQL 실행 에러");
 		}
 	}
 

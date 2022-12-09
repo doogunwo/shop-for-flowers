@@ -46,6 +46,7 @@ public class OrderManage extends JFrame {
 	UserManage userManageFrame;
 	ItemManage itemManageFrame;
 	FlowerManage flowerManageFrame;
+	create_customer createCustomerFrame;
 
 
 	public OrderManage(String user_phone, Boolean manager) {
@@ -173,6 +174,22 @@ public class OrderManage extends JFrame {
 		contentPane.add(btnNewButton);
 		
 		JButton btnNewButton_1 = new JButton("주문 추가");
+		btnNewButton_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				create_customer window = new create_customer();
+				window.frame.setLocationRelativeTo(null); // 중앙에 출력
+				window.frame.setResizable(false); // 창 크기 고정
+				window.frame.setVisible(true);
+
+				window.frame.addWindowListener(new WindowAdapter() {
+					@Override
+					public void windowClosing(WindowEvent e) {
+						e.getWindow().dispose();
+					}
+				});
+			}
+		});
 		btnNewButton_1.setBounds(272, 306, 319, 73);
 		contentPane.add(btnNewButton_1);
 		

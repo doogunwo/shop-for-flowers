@@ -1,7 +1,8 @@
-package create_customer;
+package shop_for_flowers_UI;
 
 import java.awt.EventQueue;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,7 +28,8 @@ public class create_customer extends Thread {
 	
 	public static void sounds() {
 		try {
-			File file = new File("C:\\Users\\danpe\\eclipse-workspace\\shop_for_flowers\\src\\create_customer\\sounds.wav");
+			File file = new File("C:\\Users\\danpe\\git\\shop-for-flowers\\src\\create_customer\\sounds.wav");
+			
 			 Clip clip = AudioSystem.getClip();
              clip.open(AudioSystem.getAudioInputStream(file));             
              clip.start();
@@ -92,7 +94,7 @@ public class create_customer extends Thread {
 	}
 	
 	public static void sql2() {
-		ArrayList<String> list1 = new ArrayList<>(Arrays.asList("김","도","건","황","우","이","건","유","손","보","묵","진") ); //이름
+		ArrayList<String> list1 = new ArrayList<>(Arrays.asList("김","인","호","준","영","민","대","진","현","현","흠","재","영","도","건","황","우","이","건","유","손","보","묵","진") ); //이름
 		String list2 = "010"; //전화번호
 		String list3 = "";
 		String name = ""; // 집코드
@@ -141,7 +143,7 @@ public class create_customer extends Thread {
 	
 	
 	
-	private JFrame frame;
+	public JFrame frame;
 	public static JTextField TF1;
 	public static JTextField TF4;
 	public static JTextField TF8;
@@ -155,27 +157,7 @@ public class create_customer extends Thread {
 	
 	
 	
-	
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					
-					
-					create_customer window = new create_customer();
-					window.frame.setVisible(true);
-					
-					
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 	
 	/**
 	 * Create the application.
@@ -287,5 +269,116 @@ public class create_customer extends Thread {
 		TF3.setColumns(10);
 		TF3.setBounds(101, 71, 196, 21);
 		panel.add(TF3);
+		
+		JButton btn2 = new JButton("주문등록");
+		btn2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				//주문넣기 
+				//중복고객 확인부터하자.
+				String text = TF7.getText();
+				DB_Connector db = new DB_Connector();
+				ArrayList<String> allName = new ArrayList<>();
+				String name = "";
+				
+				
+				try {
+					String query = "select 전화번호 from 주문고객";
+					db.DB_Connect();
+					java.sql.Statement stmt = db.con.createStatement();
+					ResultSet rs = stmt.executeQuery(query);
+					while(rs.next()) {					
+						allName.add(rs.getString("전화번호"));				
+						System.out.println(rs.getString("전화번호"));
+					}
+				}
+				catch (Exception d) {d.printStackTrace();
+				System.out.print("1");
+				}
+				
+				
+				try {
+					String query2 = "select 이름 from 주문고객 where 전화번호="+"'"+text+"'";
+					db.DB_Connect();
+					java.sql.Statement stmt = db.con.createStatement();
+					ResultSet rs = stmt.executeQuery(query2);
+					while(rs.next()) {					
+						name=rs.getString("이름")	;
+						System.out.println(rs.getString("이름"));
+					}
+				}
+				catch (Exception d) {d.printStackTrace();
+				System.out.print("2");
+				}
+				
+				
+				
+				
+				// 기존에 존재하는 고객님이다.
+				//전화번호는 다른데 이름같은경우 = 존재함
+				//전화번호같은데 다른이름 = 존재불가능
+				//전화번호 다르고 이름도 다른경우 존재가능
+				String get_tf1 ="";		//상품고유번호
+				String get_tf2 ="";		//상품명
+				String get_tf3 ="";		//꽃바구니
+				
+				String get_tf5 ="";		//주문날짜
+				String get_tf6 ="";		//이름
+				String get_tf7 ="";		//전화번호
+				String get_tf8 ="";		//배송지
+				
+				
+				
+				//주문 파싱
+				get_tf5 = TF5.getText();
+				get_tf5 = get_tf5.replace("-", "");
+				
+				
+				try {// insert into 주문 values(상품고유번호,상품명,카테고리,가격,재고,이미지);
+					String query3 = "insert into 주문고객(전화번호,이름,고객등급) values (?,?,?)";
+					db.DB_Connect();
+					
+					PreparedStatement ptmt = db.con.prepareStatement(query3);
+					
+					
+					ptmt.setString	(1,       TF7.getText()                	);
+					ptmt.setString	(2,       TF6.getText()                	);
+					ptmt.setString		(3,     "노말"   				);
+					int res = ptmt.executeUpdate();
+					if(res>0) System.out.println("고객저장성공");
+					else  System.out.println("고객저장실패");
+				}
+				catch (Exception d) {d.printStackTrace();
+				System.out.print("4");
+				}
+				
+				try {// insert into 주문 values(상품고유번호,상품명,카테고리,가격,재고,이미지);
+					String query4 = "insert into 주문(주문번호,주소,주문개수,주문날짜,상품고유번호,전화번호) values (?,?,?,?,?,?)";
+					db.DB_Connect();
+					
+					PreparedStatement ptmt = db.con.prepareStatement(query4);
+					
+					
+					ptmt.setString	(1,       "00000000"                	);
+					ptmt.setString	(2,       TF8.getText()                	);
+					ptmt.setInt		(3,     		Integer.parseInt(TF4.getText())   				);
+					ptmt.setInt	(4,       Integer.parseInt(get_tf5  )              		);
+					ptmt.setString	(5,       TF1.getText()                	);
+					ptmt.setString	(6,       TF7.getText()                	);
+					
+					int res = ptmt.executeUpdate();
+					if(res>0) System.out.println("주문저장성공");
+					else  System.out.println("주문저장실패");
+					
+				}
+				catch (Exception d) {d.printStackTrace();
+				System.out.print("3");
+				}
+			}
+
+		
+		});
+		btn2.setBounds(12, 89, 84, 59);
+		frame.getContentPane().add(btn2);
 	}
 }
