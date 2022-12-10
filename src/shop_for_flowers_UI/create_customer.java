@@ -4,10 +4,12 @@ import java.awt.EventQueue;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.io.File;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import javax.swing.JFrame;
 import javax.sound.sampled.AudioInputStream;
@@ -367,7 +369,12 @@ public class create_customer extends Thread {
 					ptmt.setString	(6,       TF7.getText()                	);
 					
 					int res = ptmt.executeUpdate();
-					if(res>0) System.out.println("주문저장성공");
+					if(res>0) {System.out.println("주문저장성공");
+					CallableStatement cstmt = db.con.prepareCall("{call P_2(?)}");
+					// 주문 삽입 시, 고객등급 갱신 프로시저 호출
+					cstmt.setString(1, TF7.getText());
+					cstmt.executeQuery();
+					}
 					else  System.out.println("주문저장실패");
 					
 				}

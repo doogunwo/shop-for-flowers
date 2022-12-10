@@ -180,7 +180,7 @@ public class FlowerManage extends JFrame {
 				addFlowerFrame.addWindowListener(new WindowAdapter() {
 					@Override
 					public void windowClosing(WindowEvent e) {
-						e.getWindow().dispose();
+						//e.getWindow().dispose();
 					}
 				});
 			}
